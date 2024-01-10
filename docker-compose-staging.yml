@@ -1,0 +1,32 @@
+version: '3.9'
+
+
+services:
+  backend-artizaho-staging:
+    build: .
+    image: dericsolen/be-artizaho_staging:v1.0.0
+    entrypoint: /apps/entrypoint.sh
+    env_file:
+      - ./staging.env
+    volumes:
+      - .:/apps
+    ports:
+      - "9239:8000"
+    depends_on:
+      - db-artizaho-staging
+
+  db-artizaho-staging:
+    image: postgres:16
+    container_name: artizaho-database-staging
+    env_file:
+      - ./staging.env
+    restart: always
+    volumes:
+      - pg_data_artizaho_staging:/var/lib/postgresql/data
+    ports:
+      - "5734:5432"
+
+
+volumes:
+  pg_data_artizaho_staging:
+    external: false
