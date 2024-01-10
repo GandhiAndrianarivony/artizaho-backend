@@ -1,0 +1,32 @@
+version: '3.9'
+
+
+services:
+  backend-artizaho-prod:
+    build: .
+    image: dericsolen/be-artizaho_prod:v1.0.0
+    entrypoint: /apps/entrypoint.sh
+    env_file:
+      - ./prod.env
+    volumes:
+      - .:/apps
+    ports:
+      - "9238:8000"
+    depends_on:
+      - db-artizaho-prod
+
+  db-artizaho-prod:
+    image: postgres:16
+    container_name: artizaho-database-prod
+    env_file:
+      - ./prod.env
+    restart: always
+    volumes:
+      - pg_data_artizaho_prod:/var/lib/postgresql/data
+    ports:
+      - "5733:5432"
+
+
+volumes:
+  pg_data_artizaho_prod:
+    external: false
