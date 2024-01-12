@@ -1,0 +1,7 @@
+dev.env
+prod.env
+staging.env
+.venv
+.git
+.github
+docs

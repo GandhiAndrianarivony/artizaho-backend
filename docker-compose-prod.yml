@@ -20,6 +20,9 @@ services:
     container_name: artizaho-database-prod
     env_file:
       - ./prod.env
+    environment:
+      - DJANGO_SETTINGS_MODULE=api.settings.prod
+      - DEBUG=False
     restart: always
     volumes:
       - pg_data_artizaho_prod:/var/lib/postgresql/data
