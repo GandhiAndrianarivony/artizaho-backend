@@ -77,13 +77,12 @@ class User(m.AbstractUser):
         FEMALE: "Female",
         OTHER: "Other",
     }
-    
+
     # [
     #     (MALE, "Male"),
     #     (FEMALE, "Female"),
     #     (OTHER, "Other")
     # ]
-
 
     PARTICULAR = "P"
     ENTREPRISE = "E"
@@ -104,7 +103,7 @@ class User(m.AbstractUser):
     objects = UserManager()
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["username"]
+    REQUIRED_FIELDS = ["type", "gender", "dob"]
 
     def __str__(self):
         return f"{self.username}"

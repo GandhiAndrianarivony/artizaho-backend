@@ -8,6 +8,9 @@ services:
     entrypoint: /apps/entrypoint.sh
     env_file:
       - ./dev.env
+    environment:
+      - DEBUG=true
+      - DJANGO_SETTINGS_MODULE=api.settings.dev
     volumes:
       - .:/apps
     ports:

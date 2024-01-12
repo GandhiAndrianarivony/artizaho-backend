@@ -1,6 +1,5 @@
 version: '3.9'
 
-
 services:
   backend-artizaho-staging:
     build: .
@@ -8,6 +7,9 @@ services:
     entrypoint: /apps/entrypoint.sh
     env_file:
       - ./staging.env
+    environment:
+      - DJANGO_SETTINGS_MODULE=api.settings.staging
+      - DEBUG=False
     volumes:
       - .:/apps
     ports:
@@ -25,7 +27,6 @@ services:
       - pg_data_artizaho_staging:/var/lib/postgresql/data
     ports:
       - "5734:5432"
-
 
 volumes:
   pg_data_artizaho_staging:
