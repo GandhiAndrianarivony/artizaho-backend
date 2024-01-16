@@ -1,10 +1,9 @@
 version: '3.9'
 
-
 services:
   backend-artizaho-prod:
     build: .
-    image: dericsolen/be-artizaho_prod:v1.0.0
+    image: dericsolen/artizaho:v1.0
     entrypoint: /apps/entrypoint.sh
     env_file:
       - ./prod.env
@@ -28,7 +27,6 @@ services:
       - pg_data_artizaho_prod:/var/lib/postgresql/data
     ports:
       - "5733:5432"
-
 
 volumes:
   pg_data_artizaho_prod:

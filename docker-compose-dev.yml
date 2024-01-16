@@ -1,10 +1,12 @@
-version: '3.9'
+version: '3'
 
 services:
 
   backend-artizaho-dev:
-    build: .
-    image: dericsolen/be-artizaho_dev:v1.0.0
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: dericsolen/artizaho:v1.0
     entrypoint: /apps/entrypoint.sh
     env_file:
       - ./dev.env
@@ -12,7 +14,7 @@ services:
       - DEBUG=true
       - DJANGO_SETTINGS_MODULE=api.settings.dev
     volumes:
-      - .:/apps
+      - ".:/apps"
     ports:
       - "9237:8000"
     depends_on:
@@ -28,7 +30,6 @@ services:
       - pg_data_artizaho_dev:/var/lib/postgresql/data
     ports:
       - "5732:5432"
-
 
 volumes:
   pg_data_artizaho_dev:
