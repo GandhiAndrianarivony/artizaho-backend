@@ -3,7 +3,7 @@ version: '3.9'
 services:
   backend-artizaho-staging:
     build: .
-    image: dericsolen/be-artizaho_staging:v1.0.0
+    image: dericsolen/artizaho:v1.0
     entrypoint: /apps/entrypoint.sh
     env_file:
       - ./staging.env
