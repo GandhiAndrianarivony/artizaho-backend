@@ -9,13 +9,12 @@ from django.contrib.auth.hashers import make_password
 class UserManager(m.BaseUserManager):
     use_in_migrations = True
 
-    def _create_user(self, email, account_type, gender, password, **extra_fields):
+    def _create_user(self, email, account_type, password, **extra_fields):
         """This function is used to create a new user (superuser or no)t
 
         Args:
             email (str): user email
             account_type (str): user account_type (particular or entreprise)
-            gender (str): Female, Male or Other
             password (str): user password
 
         Returns:
@@ -32,14 +31,12 @@ class UserManager(m.BaseUserManager):
         # global_user_model = apps.get_model(
         #     self.model._meta.app_label, self.model._meta.object_name
         # )
-        user = self.model(
-            email=email, account_type=account_type, gender=gender, **extra_fields
-        )
+        user = self.model(email=email, account_type=account_type, **extra_fields)
         user.password = make_password(password)
         user.save(using=self._db)
         return user
 
-    def create_user(self, email, account_type, gender, password, **extra_fields):
+    def create_user(self, email, account_type, password, **extra_fields):
         """Use to create non-admin user
         Return:
             - user (User): An instance of User
@@ -49,14 +46,14 @@ class UserManager(m.BaseUserManager):
         extra_fields.setdefault("is_superuser", False)
         extra_fields.setdefault("is_active", True)
 
-        user = self._create_user(email, account_type, gender, password, **extra_fields)
+        user = self._create_user(email, account_type, password, **extra_fields)
         return user
 
-    def create_superuser(self, email, account_type, gender, password, **extra_fields):
+    def create_superuser(self, email, account_type, password, **extra_fields):
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_staff", True)
 
-        user = self._create_user(email, account_type, gender, password, **extra_fields)
+        user = self._create_user(email, account_type, password, **extra_fields)
         return user
 
 
@@ -85,17 +82,17 @@ class User(m.AbstractUser):
         PARTICULAR: "Particular",
         ENTREPRISE: "Entreprise",
     }
-
+    username = models.CharField(max_length=255, null=True)
     email = models.EmailField(unique=True)
     account_type = models.CharField(max_length=50, choices=TYPE, db_default=PARTICULAR)
     gender = models.CharField(max_length=10, choices=GENDER, db_default=OTHER)
-    dob = models.DateField()
+    dob = models.DateField(null=True)
     nif = models.TextField(null=True)
 
     objects = UserManager()
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["first_name", "last_name", "account_type", "gender", "dob"]
+    REQUIRED_FIELDS = ["account_type"]
 
     def __str__(self):
         return f"{self.username}"

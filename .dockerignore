@@ -5,3 +5,4 @@ staging.env
 .git
 .github
 docs
+db.sqlite3

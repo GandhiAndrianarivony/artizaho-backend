@@ -25,8 +25,8 @@ services:
     restart: always
     volumes:
       - pg_data_artizaho_prod:/var/lib/postgresql/data
-    ports:
-      - "5733:5432"
+    # ports:
+    #   - "5733:5432"
 
 volumes:
   pg_data_artizaho_prod:
