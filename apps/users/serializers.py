@@ -3,6 +3,9 @@ from django.contrib.auth.hashers import make_password
 
 from rest_framework import serializers
 
+from apps.images.serializers import ImageSerializer
+from apps.contacts.serializers import ContactSerializer
+
 from .models import User
 
 
@@ -14,9 +17,19 @@ class UserSerializer(serializers.ModelSerializer):
     Methods:
     """
 
+    images = serializers.SerializerMethodField()
+
     class Meta:
         model = User
         fields = "__all__"
+        private_fields = [
+            "password",
+            "last_login",
+            "is_superuser",
+            "is_staff",
+            "groups",
+            "user_permissions",
+        ]
 
     def validate(self, data):
         """Custom data validation before saving data
@@ -39,7 +52,6 @@ class UserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data["password"] = make_password(validated_data["password"])
-        # return User.objects.create(**validated_data)
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
@@ -49,8 +61,14 @@ class UserSerializer(serializers.ModelSerializer):
             instance.save()
         return super().update(instance, validated_data)
 
+    def to_representation(self, instance):
+        repr = super().to_representation(instance)
 
-class UserInstanceSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        exclude = ["password", "groups", "user_permissions"]
+        for field in self.Meta.private_fields:
+            repr.pop(field, None)
+
+        return repr
+
+    def get_images(self, instance: User):
+        images = instance.images.all()
+        return ImageSerializer(images, many=True).data

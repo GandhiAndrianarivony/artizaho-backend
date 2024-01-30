@@ -115,5 +115,7 @@ fi
 
 
 # RUN SERVER
+python3 manage.py spectacular --file schema.yml
+
 run_server "$PORT"
 down_db "$compose_file" "$db_host_name"

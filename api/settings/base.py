@@ -54,6 +54,9 @@ INSTALLED_APPS = [
     # Local apps
     "apps.users",
     "apps.authentications",
+    "apps.images",
+    "apps.contacts",
+    "apps.artisans",
 ]
 
 MIDDLEWARE = [
@@ -90,7 +93,7 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
-    "PAGE_SIZE": 10,
+    "PAGE_SIZE": 10
 }
 
 
@@ -172,3 +175,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Default user model
 AUTH_USER_MODEL = "users.User"
+
+MEDIA_ROOT = BASE_DIR.parent / "data" / "media_files"
+MEDIA_URL = "/media/"

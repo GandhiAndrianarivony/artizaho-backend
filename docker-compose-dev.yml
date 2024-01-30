@@ -19,6 +19,8 @@ services:
       - "9237:8000"
     depends_on:
       - db-artizaho-dev
+    stdin_open: true
+    tty: true
 
   db-artizaho-dev:
     image: postgres:16

@@ -1,28 +1,31 @@
 """Module for handling user view"""
 
-from rest_framework import viewsets, status
+from django.shortcuts import get_object_or_404
+
+from rest_framework import viewsets, status, permissions
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from rest_framework.mixins import UpdateModelMixin
 
 from .models import User
-from .serializers import UserSerializer, UserInstanceSerializer
+from .serializers import UserSerializer
+
 from apps.authentications.exceptions import NotAuthenticated
+from api.mixins import ImageMixin
+from api import permissions as api_permissions
 
 
-class UserViewset(
-    UpdateModelMixin,
-    viewsets.GenericViewSet
-):
+class UserViewset(ImageMixin, viewsets.GenericViewSet):
     """Class used for handling request related to user"""
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
     def list(self, request, *args, **kwargs):
+        """Method being on the BO to retrieve the list of users"""
+
         user = request.user
         if user.is_superuser:
-            qs = self.get_queryset()
+            qs = self.get_queryset().filter(is_superuser=False)
             serializer = self.get_serializer(qs, many=True)
             page = self.paginate_queryset(serializer.data)
             if page is not None:
@@ -30,8 +33,13 @@ class UserViewset(
         else:
             raise NotAuthenticated(detail="Admin authentication required")
 
-    @action(methods=["get"], detail=False)
-    def current_user(self, request, *args, **kwargs):
+    @action(
+        methods=["get"],
+        detail=False,
+        url_path="current-user",
+        permission_classes=[permissions.IsAuthenticated],
+    )
+    def get_current_user(self, request, *args, **kwargs):
         """Get the current user
         Args:
             - request: rest_framework object
@@ -39,12 +47,7 @@ class UserViewset(
             - serialized user object
         """
         user = request.user
-        if user.is_authenticated:
-            return Response(
-                UserInstanceSerializer(user).data, status=status.HTTP_200_OK
-            )
-        else:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
+        return Response(self.get_serializer(user).data, status=status.HTTP_200_OK)
 
     def create(self, request, *args, **kwargs):
         """Used for creating a new account
@@ -53,42 +56,62 @@ class UserViewset(
         Return:
             - response: rest_framework.Response
         """
-        # breakpoint()
-        serializer = self.get_serializer(data=request.data)
+
+        data = request.data
+        contacts = data.pop("contacts", None)
+
+        serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         new_user = serializer.save()
 
         return Response(
-            UserInstanceSerializer(new_user).data, status=status.HTTP_201_CREATED
+            self.get_serializer(new_user).data, status=status.HTTP_201_CREATED
         )
 
-    @action(methods=["get"], detail=False)
-    def remove(self, request, pk=None):
+    @action(
+        methods=["delete"],
+        detail=False,
+        permission_classes=[api_permissions.IsNotAdmin, permissions.IsAuthenticated],
+    )
+    def remove(self, request, *args, **kwargs):
         """Action being used when user decide to remove his/her account"""
+
         user = request.user
-        if user.is_authenticated:
-            user.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        else:
-            raise NotAuthenticated(detail="Authentication required")
+        self.rm_user(user)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     def destroy(self, request, pk=None):
-        """Action being used by admin to remove user accounts"""
-        user = request.user
-        if user.is_superuser:
-            instance = self.get_object()
-            instance.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+        """Action being used by admin to remove/deactivate user accounts"""
+        req_user = request.user
+        if req_user.is_superuser:
+            try:
+                user = get_object_or_404(User, pk=pk)
+                self.rm_user(user)
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            except NotAuthenticated as e:
+                Response(data={"Warning": f"{e}"}, status=status.HTTP_401_UNAUTHORIZED)
         else:
             raise NotAuthenticated(detail="Admin Authentication required")
 
-    # NOTE: Use UpdateModelMixin.partial to perform partial update
-        
-    # def partial_update(self, request, pk=None, *args, **kwargs):
-    #     instance = self.get_object()
-    #     serializer = self.get_serializer(instance, data=request.data, partial=True)
-    #     serializer.is_valid(raise_exception=True)
-    #     serializer.save()
-    #     return Response(status=status.HTTP_200_OK)
+    def rm_user(self, user):
+        user.is_active = False
+        user.save()
 
-    # TODO: Updload image for a given user
+    @action(
+        methods=["patch"],
+        detail=False,
+        permission_classes=[permissions.IsAuthenticated, api_permissions.IsNotAdmin],
+    )
+    def update_info(self, request, pk=None, *args, **kwargs):
+        """Method used by logged user to update their profile"""
+
+        user = request.user
+        serializer = self.get_serializer(user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
+
+    def perform_update(self, serializer):
+        serializer.save()
+
+    # NOTE: Use UpdateModelMixin.partial to perform partial update

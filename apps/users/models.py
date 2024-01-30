@@ -1,5 +1,7 @@
 """Custom user"""
 
+from enum import Enum
+
 from django.contrib.auth import models as m
 from django.db import models
 from django.apps import apps
@@ -88,6 +90,7 @@ class User(m.AbstractUser):
     gender = models.CharField(max_length=10, choices=GENDER, db_default=OTHER)
     dob = models.DateField(null=True)
     nif = models.TextField(null=True)
+    phone_number = models.CharField(max_length=255, null=True)
 
     objects = UserManager()
 
