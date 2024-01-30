@@ -28,3 +28,10 @@ DATABASES = {
 }
 
 CORS_ALLOWED_ORIGINS = ["http://127.0.0.1:9237", "http://localhost:9237"]
+
+INSTALLED_APPS.append('drf_spectacular')
+
+REST_FRAMEWORK['DEFAULT_SCHEMA_CLASS'] = "drf_spectacular.openapi.AutoSchema"
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Artizaho API"
+}

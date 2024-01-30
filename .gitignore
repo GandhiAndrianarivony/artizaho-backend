@@ -163,3 +163,5 @@ docs/
 dev.env
 prod.env
 staging.env
+Dockerfile
+data/
