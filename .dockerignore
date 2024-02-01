@@ -6,3 +6,4 @@ staging.env
 .github
 docs
 db.sqlite3
+ERD.drawio
