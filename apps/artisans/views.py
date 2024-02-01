@@ -16,7 +16,6 @@ from api import mixins as api_mixins
     list=extend_schema(
         summary="Return a paginated list of artisan",
         responses={"200": ArtisanSerializer(many=True)},
-        # parameters=
     )
 )
 class ArtisanViewset(api_mixins.ImageMixin, viewsets.ModelViewSet):

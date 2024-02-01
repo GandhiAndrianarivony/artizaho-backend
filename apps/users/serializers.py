@@ -2,6 +2,7 @@
 from django.contrib.auth.hashers import make_password
 
 from rest_framework import serializers
+from drf_spectacular.utils import extend_schema_serializer
 
 from apps.images.serializers import ImageSerializer
 from apps.contacts.serializers import ContactSerializer
@@ -9,6 +10,15 @@ from apps.contacts.serializers import ContactSerializer
 from .models import User
 
 
+@extend_schema_serializer(
+    exclude_fields=(
+        "user_permissions",
+        "groups",
+        "is_staff",
+        "is_active",
+        "date_joined",
+    )
+)
 class UserSerializer(serializers.ModelSerializer):
     """Used to serialize user model or python dictionaries
 
@@ -17,7 +27,7 @@ class UserSerializer(serializers.ModelSerializer):
     Methods:
     """
 
-    images = serializers.SerializerMethodField()
+    images = ImageSerializer(many=True) # serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -69,6 +79,6 @@ class UserSerializer(serializers.ModelSerializer):
 
         return repr
 
-    def get_images(self, instance: User):
-        images = instance.images.all()
-        return ImageSerializer(images, many=True).data
+    # def get_images(self, instance: User):
+    #     images = instance.images.all()
+    #     return ImageSerializer(images, many=True).data

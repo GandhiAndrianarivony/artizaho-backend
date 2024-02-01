@@ -1,17 +1,6 @@
-from enum import Enum
-
 from django.db import models
 
-
-class ExpertiseChoice(str, Enum):
-    FLORAL = "FLORAL"
-
-    @classmethod
-    def choices(cls):
-        return tuple((x.value, x.name) for x in cls)
-
-    def __str__(self) -> str:
-        return f"{self.value}"
+from .choices import ExpertiseChoice
 
 
 class Artisan(models.Model):
