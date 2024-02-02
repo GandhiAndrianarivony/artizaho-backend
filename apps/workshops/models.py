@@ -24,10 +24,10 @@ class WorkshopInfo(models.Model):
     artisan = models.ForeignKey(
         Artisan, related_name="artisans", on_delete=models.SET_NULL, null=True
     )
-    max_participant = models.PositiveIntegerField()
+    max_participants = models.PositiveIntegerField()
     base_price = models.DecimalField(max_digits=10, decimal_places=2)
     discount = models.DecimalField(max_digits=10, decimal_places=2)
-    currency = models.CharField(max_length=5, choices=CurrencyType.choices())
+    currency = models.CharField(max_length=5, choices=CurrencyType.choices(), db_default=CurrencyType.DOLLARS.value)
     created_at = models.DateTimeField(auto_now_add=True)
 
 
