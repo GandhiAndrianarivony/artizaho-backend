@@ -2,22 +2,70 @@
 
 from typing import Dict
 
-import deepdiff
 
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, filters
 from rest_framework.response import Response
+from rest_framework.decorators import action
+
+from django.db import transaction
+from django.shortcuts import get_object_or_404
+import django_filters
 
 from apps.artisans.models import Artisan
 from apps.artisans.exceptions import ArtisanNotFound
+from apps.workshops.models import WorkshopBookable
 
-from .serializers import WorkshopSerializer, WorkshopInfoSerializer
+from api import mixins as api_mixins
+from api.permissions import AllowListPermission
+
+from .serializers import (
+    WorkshopSerializer,
+    WorkshopInfoSerializer,
+    WorkshopBookableSerializer,
+)
 from .models import Workshop, WorkshopInfo
 from .exceptions import WorkshopNotFound
+from .helpers import remove_dict_key, update_dict
+from .filters import WorkshopBookableFilter, WorkshopBookableOrdiring
 
 
-class WorkshopViewset(viewsets.GenericViewSet):
+class WorkshopViewset(
+    api_mixins.FilterMixin, api_mixins.ImageMixin, viewsets.GenericViewSet
+):
     serializer_class = WorkshopSerializer
     queryset = Workshop.objects.all()
+    permission_classes = [AllowListPermission]
+
+    def filter_queryset(self, queryset):
+        filter_backends = [
+            django_filters.rest_framework.DjangoFilterBackend,
+            filters.OrderingFilter,
+        ]
+        if self.action == "schedule_workshop":
+            # filter_backends.append(WorkshopBookableFilter)
+            # TODO: Search
+            ...
+
+        for backend in filter_backends:
+            queryset = backend().filter_queryset(self.request, queryset, view=self)
+
+        return queryset
+
+    def get_filterset_class(self):
+        if self.action == "schedule_workshop":
+            return WorkshopBookableFilter
+
+    def get_queryset(self):
+        self.filterset_class = self.get_filterset_class()
+
+        if self.action == "schedule_workshop":
+            self.ordering_fields = WorkshopBookableOrdiring
+
+            return WorkshopBookable.objects.filter(
+                workshop_info__workshop_id=self.kwargs.get("pk")
+            )
+
+        return super().get_queryset()
 
     def list(self, request, *args, **kwargs):
         qs = self.get_queryset()
@@ -34,15 +82,16 @@ class WorkshopViewset(viewsets.GenericViewSet):
 
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
-        workshop = serializer.save()
 
-        self.create_workshop_info(workshop_infos, workshop)
+        with transaction.atomic():
+            workshop = serializer.save()
+            self._create_workshop_info(workshop_infos, workshop)
 
         return Response(
             self.get_serializer(workshop).data, status=status.HTTP_201_CREATED
         )
 
-    def create_workshop_info(self, workshop_infos: Dict, workshop: Workshop):
+    def _create_workshop_info(self, workshop_infos: Dict, workshop: Workshop):
         artisan = workshop_infos.pop("artisan")
         try:
             artisan = Artisan.objects.get(pk=artisan["id"])
@@ -77,8 +126,10 @@ class WorkshopViewset(viewsets.GenericViewSet):
             ).data
 
             # Merge request workshop info and current workshop info
-            workshop_info = self.update_dict(current=dict(current_workshop_info), new=workshop_info)
-            self.remove_dict_key(workshop_info, "id", "created_at", "workshop")
+            workshop_info = update_dict(
+                current=dict(current_workshop_info), new=workshop_info
+            )
+            remove_dict_key(workshop_info, "id", "created_at", "workshop")
 
             # Remove artisan
             artisan = workshop_info.pop("artisan")
@@ -86,7 +137,7 @@ class WorkshopViewset(viewsets.GenericViewSet):
 
             # Add Artisan
             workshop_info["artisan"] = artisan
-            self.create_workshop_info(workshop_info, workshop)
+            self._create_workshop_info(workshop_info, workshop)
 
         return Response(
             self.get_serializer(workshop).data, status=status.HTTP_201_CREATED
@@ -97,12 +148,48 @@ class WorkshopViewset(viewsets.GenericViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-    @staticmethod
-    def remove_dict_key(obj, *keys):
-        if keys:
-            for key in keys:
-                obj.pop(key, None)
+    def destroy(self, request, pk=None, *args, **kwargs):
+        instance = self.get_object()
+        instance.delete()
+        return Response()
 
-    @staticmethod
-    def update_dict(current, new):
-        return {**current, **new}
+    @action(
+        methods=["post", "get"],
+        detail=True,
+        url_path="schedule",
+        permission_classes=[AllowListPermission],
+    )
+    def schedule_workshop(self, request, pk=None, *args, **kwargs):
+        """Used for creating and listing scheduled workshop bookable
+
+        Args:
+            request (Object): contains request info
+            pk (int): primary key of an workshop
+
+        Returns:
+            queryset: paginated queryset
+        """
+
+        workshop = get_object_or_404(Workshop, pk=pk)
+
+        workshop_info = workshop.get_workshop_info()
+
+        if request.method == "GET":
+            page = self.get_page()
+            if page is not None:
+                data = WorkshopBookableSerializer(page, many=True).data
+                return self.get_paginated_response(data)
+
+        data = request.data
+        data["available_places"] = workshop_info.max_participants
+
+        serializer = WorkshopBookableSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+
+        workshop_bookable = WorkshopBookable.objects.create(
+            workshop_info=workshop_info, **data
+        )
+        return Response(
+            WorkshopBookableSerializer(workshop_bookable).data,
+            status=status.HTTP_201_CREATED,
+        )

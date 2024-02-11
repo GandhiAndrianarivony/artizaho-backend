@@ -3,6 +3,7 @@
 import uuid
 from typing import List
 from enum import Enum
+from abc import ABC, abstractmethod
 
 import blurhash
 from PIL import Image as pil_image
@@ -153,6 +154,7 @@ class ImageMixin:
                 image_url=uploaded_image_url,
                 blurhash_code=hash_code,
             )
+            new_image.base_url = str(new_image.image_url.url)
             new_image.save()
 
             # Append new hash code and new filename
@@ -175,3 +177,20 @@ class ImageMixin:
     @staticmethod
     def read_image(path: InMemoryUploadedFile):
         return pil_image.open(path)
+
+
+class FilterMixin(ABC):
+
+    @abstractmethod
+    def filter_queryset(self):
+        pass
+
+    @abstractmethod
+    def get_filterset_class(self):
+        pass
+
+    def get_page(self):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+
+        return page

@@ -2,7 +2,7 @@
 
 function create_superuser() {
     echo '[INFO] Creating superuser ...'
-    python3 manage.py createsuperuser --account_type E --noinput
+    python3 manage.py createsuperuser --account_type E --is_super_admin True --noinput
     echo
 }
 

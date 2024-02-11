@@ -91,11 +91,12 @@ class User(m.AbstractUser):
     dob = models.DateField(null=True)
     nif = models.TextField(null=True)
     phone_number = models.CharField(max_length=255, null=True)
+    is_super_admin = models.BooleanField(default=False)
 
     objects = UserManager()
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["account_type"]
+    REQUIRED_FIELDS = ["account_type", "is_super_admin"]
 
     def __str__(self):
         return f"{self.username}"
