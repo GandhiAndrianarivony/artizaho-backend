@@ -16,6 +16,9 @@ class Workshop(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def get_workshop_info(self):
+        return self.informations.all().order_by("-created_at").first()
+
 
 class WorkshopInfo(models.Model):
     workshop = models.ForeignKey(
@@ -27,7 +30,11 @@ class WorkshopInfo(models.Model):
     max_participants = models.PositiveIntegerField()
     base_price = models.DecimalField(max_digits=10, decimal_places=2)
     discount = models.DecimalField(max_digits=10, decimal_places=2)
-    currency = models.CharField(max_length=5, choices=CurrencyType.choices(), db_default=CurrencyType.DOLLARS.value)
+    currency = models.CharField(
+        max_length=5,
+        choices=CurrencyType.choices(),
+        db_default=CurrencyType.DOLLARS.value,
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
 
@@ -47,13 +54,14 @@ class CustomWorkshop(models.Model):
 
 class WorkshopBookable(models.Model):
     workshop_info = models.ForeignKey(
-        WorkshopInfo, related_name="bookables", on_delete=models.CASCADE
+        WorkshopInfo, related_name="bookables", on_delete=models.CASCADE, null=True
     )
-    date = models.DateField()
-    time = models.TimeField()
+    start_date = models.DateField(null=True)
+    end_date = models.DateField(null=True)
+    time = models.TimeField(null=True)
+    duration = models.PositiveIntegerField(verbose_name="Duration in seconds")
     available_places = models.IntegerField()
     location = models.TextField()
-    duration = models.PositiveIntegerField(verbose_name="Duration in seconds")
     is_available = models.BooleanField(default=True)
 
 

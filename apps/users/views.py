@@ -115,3 +115,12 @@ class UserViewset(ImageMixin, viewsets.GenericViewSet):
         serializer.save()
 
     # NOTE: Use UpdateModelMixin.partial to perform partial update
+        
+    @action(methods=['get'], detail=False, url_path='admin')
+    def get_admin(self, request):
+        admins = self.get_queryset().filter(is_superuser=True, is_super_admin=False)
+
+        serializer = self.get_serializer(admins, many=True)
+        page = self.paginate_queryset(serializer.data)
+        if page is not None:
+            return self.get_paginated_response(serializer.data)

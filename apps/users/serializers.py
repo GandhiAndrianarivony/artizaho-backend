@@ -1,4 +1,5 @@
 """Serializer module is used to serialize user model or python dictionaries"""
+
 from django.contrib.auth.hashers import make_password
 
 from rest_framework import serializers
@@ -27,7 +28,9 @@ class UserSerializer(serializers.ModelSerializer):
     Methods:
     """
 
-    images = ImageSerializer(many=True) # serializers.SerializerMethodField()
+    images = ImageSerializer(
+        many=True, required=False
+    )  # serializers.SerializerMethodField()
 
     class Meta:
         model = User

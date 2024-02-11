@@ -7,3 +7,11 @@ class IsNotAdmin(permissions.BasePermission):
 
     def has_permission(self, request, view):
         return not request.user.is_staff
+
+
+class AllowListPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if view.action == "list" or request.method == "GET":
+            return True
+        else:
+            return request.user and request.user.is_superuser
