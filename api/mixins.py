@@ -194,3 +194,9 @@ class FilterMixin(ABC):
         page = self.paginate_queryset(queryset)
 
         return page
+
+
+class SerializerContextMixin:
+    def get_serializer_context(self, *args, **kwargs):
+        context = super().get_serializer_context()
+        return {**context, **kwargs}
