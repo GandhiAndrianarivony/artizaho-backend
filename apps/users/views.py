@@ -6,12 +6,15 @@ from rest_framework import viewsets, status, permissions
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
-from .models import User
-from .serializers import UserSerializer
-
 from apps.authentications.exceptions import NotAuthenticated
+from apps.workshops.models import WorkshopReservation
+from apps.workshops.serializers import WorkshopReservationSerializer
+
 from api.mixins import ImageMixin
 from api import permissions as api_permissions
+
+from .models import User
+from .serializers import UserSerializer
 
 
 class UserViewset(ImageMixin, viewsets.GenericViewSet):
@@ -115,8 +118,8 @@ class UserViewset(ImageMixin, viewsets.GenericViewSet):
         serializer.save()
 
     # NOTE: Use UpdateModelMixin.partial to perform partial update
-        
-    @action(methods=['get'], detail=False, url_path='admin')
+
+    @action(methods=["get"], detail=False, url_path="admin")
     def get_admin(self, request):
         admins = self.get_queryset().filter(is_superuser=True, is_super_admin=False)
 
@@ -124,3 +127,27 @@ class UserViewset(ImageMixin, viewsets.GenericViewSet):
         page = self.paginate_queryset(serializer.data)
         if page is not None:
             return self.get_paginated_response(serializer.data)
+
+    @action(
+        methods=["get"],
+        detail=False,
+        url_path="reservation",
+        permission_classes=[permissions.IsAuthenticated],
+    )
+    def get_user_reservations(self, request, *args, **kwargs):
+        """Retrieve all workshop booked by a logged in user"""
+
+        user = request.user
+        user_reservation = WorkshopReservation.objects.filter(user=user)
+
+        if user.is_superuser:
+            user_reservation = WorkshopReservation.objects.all()
+            print(f"[INFO] Admin logged in")
+
+        serialized_data = WorkshopReservationSerializer(
+            user_reservation, many=True
+        ).data
+
+        page = self.paginate_queryset(serialized_data)
+        if page is not None:
+            return self.get_paginated_response(serialized_data)

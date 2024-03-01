@@ -37,18 +37,16 @@ class ArtisanAvailabilitySerializer(serializers.ModelSerializer):
         model = ArtisanAvailability
         fields = "__all__"
 
+    @transaction.atomic
     def create(self, validated_data):
         hours = validated_data.pop("hours")
-        with transaction.atomic():
-            availability = ArtisanAvailability.objects.create(
-                artisan=self.context.get("artisan"), **validated_data
-            )
+        availability = ArtisanAvailability.objects.create(
+            artisan=self.context.get("artisan"), **validated_data
+        )
 
-            hrs = []
-            for hour in hours:
-                hrs.append(ArtisanTimeAvailability(availability=availability, **hour))
-            ArtisanTimeAvailability.objects.bulk_create(hrs)
+        hrs = []
+        for hour in hours:
+            hrs.append(ArtisanTimeAvailability(availability=availability, **hour))
+        ArtisanTimeAvailability.objects.bulk_create(hrs)
 
-            return availability
-
-        return ArtisanAvailability.objects.none()
+        return availability

@@ -24,9 +24,6 @@ class WorkshopInfo(models.Model):
     workshop = models.ForeignKey(
         Workshop, related_name="informations", on_delete=models.SET_NULL, null=True
     )
-    artisan = models.ForeignKey(
-        Artisan, related_name="artisans", on_delete=models.SET_NULL, null=True
-    )
     max_participants = models.PositiveIntegerField()
     base_price = models.DecimalField(max_digits=10, decimal_places=2)
     discount = models.DecimalField(max_digits=10, decimal_places=2)
@@ -42,19 +39,28 @@ class CustomWorkshop(models.Model):
     user = models.ForeignKey(
         User, related_name="custom_workshops", on_delete=models.SET_NULL, null=True
     )
-    workshop_info = models.ForeignKey(
-        WorkshopInfo, related_name="customs", on_delete=models.SET_NULL, null=True
+    workshop = models.ForeignKey(
+        Workshop, related_name="customizes", on_delete=models.SET_NULL, null=True
     )
     date = models.DateField()
     time = models.TimeField()
     number_of_participants = models.PositiveIntegerField()
     location = models.TextField()
-    status = models.CharField(max_length=100, choices=CustomWorkshopStatus.choices())
+    status = models.CharField(
+        max_length=100,
+        choices=CustomWorkshopStatus.choices(),
+        default=CustomWorkshopStatus.NEW.value,
+    )
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    is_enterprise = models.BooleanField(default=False, null=True)
 
 
 class WorkshopBookable(models.Model):
     workshop_info = models.ForeignKey(
         WorkshopInfo, related_name="bookables", on_delete=models.CASCADE, null=True
+    )
+    artisan = models.ForeignKey(
+        Artisan, related_name="bookable_workshops", on_delete=models.SET_NULL, null=True
     )
     start_date = models.DateField(null=True)
     end_date = models.DateField(null=True)
@@ -63,6 +69,7 @@ class WorkshopBookable(models.Model):
     available_places = models.IntegerField()
     location = models.TextField()
     is_available = models.BooleanField(default=True)
+    created_at = models.DateTimeField(null=True, auto_now_add=True)
 
 
 class WorkshopReservation(models.Model):
@@ -76,6 +83,9 @@ class WorkshopReservation(models.Model):
     number_of_participants = models.PositiveIntegerField()
     custom_workshop = models.ForeignKey(
         CustomWorkshop, related_name="booked", on_delete=models.SET_NULL, null=True
+    )
+    artisan = models.ForeignKey(
+        Artisan, related_name="custom_workshop", null=True, on_delete=models.SET_NULL
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

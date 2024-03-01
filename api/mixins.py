@@ -107,9 +107,6 @@ class ImageMixin:
             existing_images_filename = list(
                 Image.objects.values_list("file_name", flat=True)
             )
-            existing_blurhashes_code = list(
-                Image.objects.values_list("blurhash_code", flat=True)
-            )
 
             # Create each image from list of images
             for uploaded_image_url in uploaded_images:
@@ -117,7 +114,6 @@ class ImageMixin:
                     app_name,
                     uploaded_image_url,
                     existing_images_filename,
-                    existing_blurhashes_code,
                 )
                 if image_obj:
                     instance.images.add(image_obj)
@@ -130,16 +126,9 @@ class ImageMixin:
         app_name: str,
         uploaded_image_url: InMemoryUploadedFile,
         existing_images_filename: List[str],
-        existing_blurhashes_code: List[str],
     ):
         if app_name in APP_NAMES:
             hash_code = self.get_blurhash_code(uploaded_image_url)
-
-            # FIXME: How to handle duplicate image?
-            # # Check if image is already created based on hash_code
-            # if hash_code in existing_blurhashes_code:
-            #     return Image.objects.none()
-            # else:
 
             new_file_name = str(uuid.uuid4())
 
@@ -159,7 +148,6 @@ class ImageMixin:
 
             # Append new hash code and new filename
             existing_images_filename.append(new_file_name)
-            existing_blurhashes_code.append(hash_code)
 
             return new_image
         else:

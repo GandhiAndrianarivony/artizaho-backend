@@ -22,5 +22,9 @@ class Enumeration(str, Enum):
     def choices(cls):
         return tuple((x.value, x.name) for x in cls)
 
+    @classmethod
+    def to_dict(cls):
+        return dict((x.name, x.value) for x in cls)
+
     def __str__(self):
         return f"{self.value}"

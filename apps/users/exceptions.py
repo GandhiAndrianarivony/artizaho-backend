@@ -12,3 +12,6 @@ class NumberOfImageNotAllowed(APIException):
     default_detail = "Multiple image uploaded"
 
 
+class UserNotFound(APIException):
+    default_code = status.HTTP_400_BAD_REQUEST
+    default_detail = "User not found"
