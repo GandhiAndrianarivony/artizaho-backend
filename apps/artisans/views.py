@@ -41,7 +41,7 @@ class ArtisanViewset(
         )
         serializer.is_valid(raise_exception=True)
 
-        self.perform_update(serializer)
+        self.perform_create(serializer)
         return Response(serializer.data)
 
 

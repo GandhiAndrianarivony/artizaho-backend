@@ -13,3 +13,4 @@ class CustomWorkshopStatus(Enumeration):
     VALID = 'Valid'
     REJECTED = 'Rejected'
     PENDING = 'Pending'
+    NEW = "New"
