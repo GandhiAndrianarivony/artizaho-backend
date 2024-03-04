@@ -180,3 +180,7 @@ AUTH_USER_MODEL = "users.User"
 
 MEDIA_ROOT = BASE_DIR.parent / "data" / "media_files"
 MEDIA_URL = "/media/"
+
+
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = True
