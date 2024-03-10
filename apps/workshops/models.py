@@ -18,6 +18,9 @@ class Workshop(models.Model):
 
     def get_workshop_info(self):
         return self.informations.all().order_by("-created_at").first()
+    
+    def __str__(self) -> str:
+        return self.title
 
 
 class WorkshopInfo(models.Model):
@@ -74,7 +77,7 @@ class WorkshopBookable(models.Model):
 
 class WorkshopReservation(models.Model):
     workshop_bookable = models.ForeignKey(
-        WorkshopBookable, related_name="booked", on_delete=models.SET_NULL, null=True
+        WorkshopBookable, related_name="workshop_booked", on_delete=models.SET_NULL, null=True
     )
     user = models.ForeignKey(
         User, related_name="reservations", on_delete=models.SET_NULL, null=True
@@ -82,7 +85,7 @@ class WorkshopReservation(models.Model):
     payment_status = models.CharField(max_length=125, choices=PaymentStatus.choices())
     number_of_participants = models.PositiveIntegerField()
     custom_workshop = models.ForeignKey(
-        CustomWorkshop, related_name="booked", on_delete=models.SET_NULL, null=True
+        CustomWorkshop, related_name="custom_workshop_booked", on_delete=models.SET_NULL, null=True
     )
     artisan = models.ForeignKey(
         Artisan, related_name="custom_workshop", null=True, on_delete=models.SET_NULL

@@ -12,3 +12,8 @@ class MissingImage(APIException):
 class AppNameNotFound(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = "App Name not found"
+
+
+class TruncatedImage(APIException):
+    status_code = status.HTTP_400_BAD_REQUEST
+    default_detail = "Image truncated"

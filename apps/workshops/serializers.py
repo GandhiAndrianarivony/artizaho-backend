@@ -66,6 +66,7 @@ class CustomWorkshopSerializer(serializers.ModelSerializer):
 class WorkshopReservationSerializer(serializers.ModelSerializer):
     workshop_bookable = WorkshopBookableSerializer()
     custom_workshop = CustomWorkshopSerializer()
+
     class Meta:
         model = WorkshopReservation
         fields = [
@@ -75,4 +76,6 @@ class WorkshopReservationSerializer(serializers.ModelSerializer):
             "workshop_bookable",
             "payment_status",
             "custom_workshop",
+            "created_at",
+            "artisan",
         ]

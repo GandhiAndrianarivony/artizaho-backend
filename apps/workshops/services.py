@@ -12,3 +12,5 @@ def get_object(model, data, data_attr, exception, message, model_field):
         instance = model.objects.get(**filter_kwargs)
     except:
         raise exception(message)
+
+    return instance

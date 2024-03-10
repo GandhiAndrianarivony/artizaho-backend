@@ -21,9 +21,7 @@ from .serializers import ArtisanAvailabilitySerializer
     )
 )
 class ArtisanViewset(
-    api_mixins.SerializerContextMixin,
-    api_mixins.ImageMixin, 
-    viewsets.ModelViewSet
+    api_mixins.SerializerContextMixin, api_mixins.ImageMixin, viewsets.ModelViewSet
 ):
     queryset = Artisan.objects.all()
     serializer_class = ArtisanSerializer
@@ -34,14 +32,28 @@ class ArtisanViewset(
         artisan = self.get_object()
 
         serializer = ArtisanAvailabilitySerializer(
-            data=request.data, 
-            context=self.get_serializer_context(
-                artisan=artisan
-            )
+            data=request.data, context=self.get_serializer_context(artisan=artisan)
         )
         serializer.is_valid(raise_exception=True)
 
         self.perform_create(serializer)
         return Response(serializer.data)
 
+    # @action(methods=["get"], detail=True, url_path="stats")
+    # def get_artisan_stats(self, request, pk=None, *args, **kwargs):
+    #     """Generate artisan statistics"""
+    #     # Get artisan
+    #     artisan = self.get_object()
 
+    #     # Get Artisan Bookable workshop such that they are booked
+    #     artisan_bookable_workshops = artisan.bookable_workshops.all().prefetch_related(
+    #         "booked"
+    #     )
+    #     for a_bw in artisan_bookable_workshops:
+    #         reservations = a_bw.booked.all()
+    #         if reservations.count():
+    #             breakpoint()
+    #         print(reservations)
+
+    #     # Get Artisan Custom workshop such that they are booked
+    #     breakpoint()
