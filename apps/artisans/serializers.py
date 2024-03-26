@@ -41,6 +41,7 @@ class ArtisanSerializer(serializers.ModelSerializer):
                 workshops.add(a_bw.workshop_info.workshop.title)
         total_client += artisan_custom_workshops.count()
 
+        # TODO: Get User score
         return {"total_client": total_client, "workshops": list(workshops)}
 
     @staticmethod

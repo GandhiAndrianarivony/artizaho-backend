@@ -28,7 +28,6 @@ class WorkshopInfo(models.Model):
         Workshop, related_name="informations", on_delete=models.SET_NULL, null=True
     )
     max_participants = models.PositiveIntegerField()
-    base_price = models.DecimalField(max_digits=10, decimal_places=2)
     discount = models.DecimalField(max_digits=10, decimal_places=2)
     currency = models.CharField(
         max_length=5,
@@ -69,6 +68,7 @@ class WorkshopBookable(models.Model):
     end_date = models.DateField(null=True)
     time = models.TimeField(null=True)
     duration = models.PositiveIntegerField(verbose_name="Duration in seconds")
+    base_price = models.DecimalField(max_digits=10, decimal_places=2, null=True)
     available_places = models.IntegerField()
     location = models.TextField()
     is_available = models.BooleanField(default=True)
