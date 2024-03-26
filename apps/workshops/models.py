@@ -18,6 +18,9 @@ class Workshop(models.Model):
 
     def get_workshop_info(self):
         return self.informations.all().order_by("-created_at").first()
+    
+    def __str__(self) -> str:
+        return self.title
 
 
 class WorkshopInfo(models.Model):
@@ -25,7 +28,6 @@ class WorkshopInfo(models.Model):
         Workshop, related_name="informations", on_delete=models.SET_NULL, null=True
     )
     max_participants = models.PositiveIntegerField()
-    base_price = models.DecimalField(max_digits=10, decimal_places=2)
     discount = models.DecimalField(max_digits=10, decimal_places=2)
     currency = models.CharField(
         max_length=5,
@@ -66,6 +68,7 @@ class WorkshopBookable(models.Model):
     end_date = models.DateField(null=True)
     time = models.TimeField(null=True)
     duration = models.PositiveIntegerField(verbose_name="Duration in seconds")
+    base_price = models.DecimalField(max_digits=10, decimal_places=2, null=True)
     available_places = models.IntegerField()
     location = models.TextField()
     is_available = models.BooleanField(default=True)
@@ -74,7 +77,7 @@ class WorkshopBookable(models.Model):
 
 class WorkshopReservation(models.Model):
     workshop_bookable = models.ForeignKey(
-        WorkshopBookable, related_name="booked", on_delete=models.SET_NULL, null=True
+        WorkshopBookable, related_name="workshop_booked", on_delete=models.SET_NULL, null=True
     )
     user = models.ForeignKey(
         User, related_name="reservations", on_delete=models.SET_NULL, null=True
@@ -82,7 +85,7 @@ class WorkshopReservation(models.Model):
     payment_status = models.CharField(max_length=125, choices=PaymentStatus.choices())
     number_of_participants = models.PositiveIntegerField()
     custom_workshop = models.ForeignKey(
-        CustomWorkshop, related_name="booked", on_delete=models.SET_NULL, null=True
+        CustomWorkshop, related_name="custom_workshop_booked", on_delete=models.SET_NULL, null=True
     )
     artisan = models.ForeignKey(
         Artisan, related_name="custom_workshop", null=True, on_delete=models.SET_NULL

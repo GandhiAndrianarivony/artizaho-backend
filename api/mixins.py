@@ -164,7 +164,10 @@ class ImageMixin:
 
     @staticmethod
     def read_image(path: InMemoryUploadedFile):
-        return pil_image.open(path)
+        try:
+            img = pil_image.open(path)
+        except:
+            raise image_exceptions.TruncatedImage(f"Trancated image")
 
 
 class FilterMixin(ABC):
